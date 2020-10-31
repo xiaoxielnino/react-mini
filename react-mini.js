@@ -1,22 +1,22 @@
-const domRoot = document.getElementById("root");
+// const domRoot = document.getElementById("root");
 
-const domInput = document.createElement("input");
-// Set properties
-domInput["type"] = "text";
-domInput["value"] = "Hi world";
-domInput["className"] = "my-class";
-// Listen to events
-domInput.addEventListener("change", (e) => alert(e.target.value));
-// Create a text node
-const domText = document.createTextNode("");
-// Set text node content
-domText["nodeValue"] = "Foo";
-// Append an element
-domRoot.appendChild(domInput);
-// Append a text node (same as previous)
-domRoot.appendChild(domText);
+// const domInput = document.createElement("input");
+// // Set properties
+// domInput["type"] = "text";
+// domInput["value"] = "Hi world";
+// domInput["className"] = "my-class";
+// // Listen to events
+// domInput.addEventListener("change", (e) => alert(e.target.value));
+// // Create a text node
+// const domText = document.createTextNode("");
+// // Set text node content
+// domText["nodeValue"] = "Foo";
+// // Append an element
+// domRoot.appendChild(domInput);
+// // Append a text node (same as previous)
+// domRoot.appendChild(domText);
 
-function render(element, parentDom) {
+export function render(element, parentDom) {
   const { type, props } = element;
 
   // create DOM element
@@ -24,7 +24,7 @@ function render(element, parentDom) {
 
   const dom = isTextElement ? document.createTextNode("") : document.createElement(type);
 
-  const isListener = (name) => name.startWith("on");
+  const isListener = (name) => name.startsWith("on");
   Object.keys(props)
     .filter(isListener)
     .forEach((name) => {
@@ -39,7 +39,7 @@ function render(element, parentDom) {
       dom[name] = props[name];
     });
 
-  const childElements = props.chilren || [];
+  const childElements = props.children || [];
   childElements.forEach((childElements) => render(childElements, dom));
 
   parentDom.appendChild(dom);
@@ -47,7 +47,7 @@ function render(element, parentDom) {
 
 const TEXT_ELEMENT = "TEXT ELEMENT";
 
-function createElement(type, config, ...args) {
+export function createElement(type, config, ...args) {
   const props = Object.assign({}, config);
   const hasChildren = args.length > 0;
   const rawChildren = hasChildren ? [].concat(...args) : [];
@@ -60,3 +60,6 @@ function createElement(type, config, ...args) {
 function createTextElement(value) {
   return createElement(TEXT_ELEMENT, { nodeValue: value });
 }
+
+
+export default {}
