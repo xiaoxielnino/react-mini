@@ -30,20 +30,41 @@ const stories = [
   }
 ];
 
-const appElement = () => <div><ul>{stories.map(storyElement)}</ul></div>;
-
-function storyElement(story) {
-  return (
-    <li>
-      <button onClick={e => handleClick(story)}>{story.likes}<b>❤️</b></button>
-      <a href={story.url}>{story.name}</a>
-    </li>
-  );
+class App extends ReactMini.Component {
+  render() {
+    return (
+      <div>
+        <h1>Didact Stories</h1>
+        <ul>
+          {this.props.stories.map(story => {
+            return <Story name={story.name} url={story.url} />;
+          })}
+        </ul>
+      </div>
+    );
+  }
+}
+class Story extends ReactMini.Component {
+  constructor(props) {
+    super(props);
+    this.state = { likes: Math.ceil(Math.random() * 100) };
+  }
+  like() {
+    this.setState({
+      likes: this.state.likes + 1
+    });
+  }
+  render() {
+    const { name, url } = this.props;
+    const { likes } = this.state;
+    const likesElement = <span />;
+    return (
+      <li>
+        <button onClick={e => this.like()}>{likes}<b>❤️</b></button>
+        <a href={url}>{name}</a>
+      </li>
+    );
+  }
 }
 
-function handleClick(story) {
-  story.likes += 1;
-  ReactMini.render(appElement(), document.getElementById('root'))
-}
-
-ReactMini.render(appElement(), document.getElementById('root'))
+ReactMini.render(<App  stories={stories}/>, document.getElementById('root'))

@@ -33,17 +33,27 @@ function reconcile(parentDom, instance, element) {
     // Remove instance
     parentDom.removeChild(instance.dom);
     return null;
-  } else if (instance.element.type === element.type) {
-    // Update instance
+  } else if (instance.element.type !== element.type) {
+    // Replace instance
+    const newInstance = instantiate(element);
+    parentDom.replaceChild(newInstance.dom, instance.dom);
+    return newInstance;
+  } else if (typeof element.type === "string") {
+    // Update dom instance
     updateDomProperties(instance.dom, instance.element.props, element.props);
     instance.childInstances = reconcileChildren(instance, element);
     instance.element = element;
     return instance;
   } else {
-    // Replace instance
-    const newInstance = instantiate(element);
-    parentDom.replaceChild(newInstance.dom, instance.dom);
-    return newInstance;
+    //Update composite instance
+    instance.publicInstance.props = element.props;
+    const childElement = instance.publicInstance.render();
+    const oldChildInstance = instance.childInstance;
+    const childInstance = reconcile(parentDom, oldChildInstance, childElement);
+    instance.dom = childInstance.dom;
+    instance.childInstance = childInstance;
+    instance.element = element;
+    return instance;
   }
 }
 
@@ -64,15 +74,14 @@ function reconcileChildren(instance, element) {
 
 function instantiate(element) {
   const { type, props } = element;
+  const isDomElement = typeof type === 'string';
 
-  // create DOM element
-  const isTextElement = type === 'TEXT ELEMENT';
+  if(isDomElement) {
+    // instantiate DOM element
+    const isTextElement = type === 'TEXT ELEMENT';
+    const dom = isTextElement ? document.createTextNode("") : document.createElement(type);
+    updateDomProperties(dom, [], props);
 
-  const dom = isTextElement ? document.createTextNode("") : document.createElement(type);
-
-  updateDomProperties(dom, [], props);
-
-    //Instantiate and append children
     const childElement = props.children || [];
     const childInstances = childElement.map(instantiate);
     const childDoms = childInstances.map(childInstance => childInstance.dom);
@@ -80,6 +89,17 @@ function instantiate(element) {
 
     const instance = { dom, element, childInstances };
     return instance;
+  } else {
+    //instantiate component element
+    const instance = {};
+    const publicInstance = createPublicInstance(element, instance);
+    const childElement = publicInstance.render();
+    const childInstance = instantiate(childElement);
+    const dom = childInstance.dom;
+
+    Object.assign(instance, { dom, element, childInstance, publicInstance });
+    return instance;
+  }
 }
 
 function updateDomProperties(dom, prevProps, nextProps) {
@@ -107,6 +127,31 @@ function updateDomProperties(dom, prevProps, nextProps) {
     const eventType = name.toLowerCase().substring(2);
     dom.addEventListener(eventType, nextProps[name]);
   });
+}
+
+export class Component {
+  constructor(props) {
+    this.props = props;
+    this.state = this.state || {};
+  }
+
+  setState(partialState) {
+    this.state = Object.assign({}, this.state, partialState);
+    updateInstance(this.__internalInstance);
+  }
+}
+
+function createPublicInstance(element, internalInstance) {
+  const { type, props} = element;
+  const publicInstance = new type(props);
+  publicInstance.__internalInstance = internalInstance;
+  return publicInstance;
+}
+
+function updateInstance(internalInstance) {
+  const parentDom = internalInstance.dom.parentDom;
+  const element = internalInstance.element;
+  reconcile(parentDom, internalInstance, element);
 }
 
 export default {}

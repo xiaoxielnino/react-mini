@@ -11,10 +11,10 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "@babel/core": "^7.12.3",
+    "@babel/core": "7.12.3",
     "@babel/node": "^7.12.1",
-    "@babel/plugin-transform-react-jsx": "^7.12.1",
-    "@babel/preset-env": "^7.12.1",
+    "@babel/plugin-transform-react-jsx": "7.12.1",
+    "@babel/preset-env": "7.12.1",
     "nodemon": "^2.0.6"
   }
 }
